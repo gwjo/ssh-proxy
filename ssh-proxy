@@ -23,6 +23,8 @@
 #       (http://www.perkin.org.uk/posts/ssh-via-http-proxy-in-osx.html)
 ##
 
+shopt -s extglob
+
 # set to "echo" to debug; use -v option to ssh to see output
 DEBUG=
 
@@ -35,14 +37,14 @@ timeout=8
 # Allow default proxy host to come from environment
 proxy=${http_proxy-${HTTP_PROXY-${https_proxy-$HTTPS_PROXY}}}
 # strip off http[s]:// and anything after first slash
-proxy=${proxy#http?://}
+proxy=${proxy#http?(s)://}
 proxy=${proxy%%/*}
 
 # if "nc" not found, try "netcat"; check later
 # should look also for ncat, but what preference order?
-netcat=nc
+netcat=ncat
 if ! type -p ${netcat} >/dev/null 2>&1; then
-  netcat="netcat"
+  netcat="nc"
 fi
 
 # parse args - can specify -n <netcat> and/or -t <tunnel>
@@ -103,6 +105,7 @@ elif [ -n "${hophost}" ]; then
 
 # else, if proxy defined, then try that
 elif [ -n "${proxyhost}" ]; then
+  #echo "Proxying through ${proxyhost} to ${desthost}" 1>&2
   $DEBUG exec ${tunnel} ${proxyhost} ${proxyport} ${desthost} ${destport}
 
 # otherwise, we got SUEd...
